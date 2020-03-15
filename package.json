@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/jessica-leite/alura-typescript#readme",
   "devDependencies": {
+    "@types/jquery": "^3.3.33",
     "typescript": "^2.3.2"
   }
 }

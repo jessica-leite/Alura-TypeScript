@@ -1,3 +1,5 @@
+import { logarTempoDeExecucao } from '../helpers/decorators/index';
+
 export abstract class View<T> {
     private _element: JQuery;
 
@@ -5,6 +7,7 @@ export abstract class View<T> {
         this._element = $(selector);
     }
 
+    @logarTempoDeExecucao()
     update(model : T) : void {
         this._element.html(this.template(model));
     }

@@ -1,8 +1,9 @@
-import { Negociacao, Negociacoes } from '../models/Index';
+import { Negociacao, Negociacoes, NegociacaoParcial } from '../models/Index';
 import { MensagemView, NegociacoesView } from '../views/Index';
-import { domInject } from '../helpers/decorators/index';
+import { domInject, throttle } from '../helpers/decorators/index';
+import { NegociacaoService } from '../services/Index';
 
-export class NegociacaoController{
+export class NegociacaoController {
 
 	@domInject('#data')
 	private _inputData: JQuery;
@@ -37,6 +38,12 @@ export class NegociacaoController{
 
 		const negociacao = new Negociacao(data, quantidade, valor);
 
+		console.log(`Imprimindo...`);
+		console.log(`Data: ${negociacao.data}
+					Quantidade: ${negociacao.quantidade}
+					Valor: ${negociacao.valor}
+					Volume: ${negociacao.volume}`);
+
 		this._negociacoes.adicionar(negociacao);
 
 		this._negociacoesView.update(this._negociacoes);
@@ -47,6 +54,25 @@ export class NegociacaoController{
 	private _ehDiaUtil(data: Date) {
 		var dia = data.getDay();
 		return dia != DiaDaSemana.Domingo && dia != DiaDaSemana.Sabado;
+	}
+
+	@throttle()
+	importarDados() {
+
+		function isOk(res: Response) {
+			if (res.ok)
+				return res;
+			else
+				throw new Error(res.statusText);
+		}
+
+		var negociacao = new NegociacaoService();
+		negociacao.obterNegociacoes(isOk)
+			.then(negociacoes =>
+				negociacoes.forEach(negociacao => this._negociacoes.adicionar(negociacao)))
+			.catch(error => console.log(error));
+
+		this._negociacoesView.update(this._negociacoes);
 	}
 }
 

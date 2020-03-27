@@ -1,6 +1,7 @@
 import { Negociacao, Negociacoes, NegociacaoParcial } from '../models/Index';
 import { MensagemView, NegociacoesView } from '../views/Index';
 import { domInject, throttle } from '../helpers/decorators/index';
+import { imprime } from '../helpers/index';
 import { NegociacaoService } from '../services/Index';
 
 export class NegociacaoController {
@@ -38,13 +39,9 @@ export class NegociacaoController {
 
 		const negociacao = new Negociacao(data, quantidade, valor);
 
-		console.log(`Imprimindo...`);
-		console.log(`Data: ${negociacao.data}
-					Quantidade: ${negociacao.quantidade}
-					Valor: ${negociacao.valor}
-					Volume: ${negociacao.volume}`);
-
 		this._negociacoes.adicionar(negociacao);
+
+		imprime(negociacao, this._negociacoes);
 
 		this._negociacoesView.update(this._negociacoes);
 
@@ -68,11 +65,20 @@ export class NegociacaoController {
 
 		var negociacao = new NegociacaoService();
 		negociacao.obterNegociacoes(isOk)
-			.then(negociacoes =>
-				negociacoes.forEach(negociacao => this._negociacoes.adicionar(negociacao)))
+			.then(negociacoesParaImportar => {
+
+				const negociacoesJaImportadas = this._negociacoes.paraArray();
+
+				negociacoesParaImportar.filter(negociacao =>
+					!negociacoesJaImportadas.some(jaImportada =>
+					negociacao.ehIgual(jaImportada)))
+					.forEach(negociacao =>
+						this._negociacoes.adicionar(negociacao));
+
+				this._negociacoesView.update(this._negociacoes);
+			})
 			.catch(error => console.log(error));
 
-		this._negociacoesView.update(this._negociacoes);
 	}
 }
 
